@@ -1,0 +1,64 @@
+MIT License
+
+Copyright (c) 2025 [Laurie Annis]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Third-Party Services and Attribution
+
+This software uses the following third-party services:
+
+### Sketchfab Viewer API
+- **Service**: Sketchfab 3D Viewer and API
+- **Provider**: Sketchfab, Inc.
+- **Website**: https://sketchfab.com
+- **API Documentation**: https://sketchfab.com/developers
+- **Terms**: https://sketchfab.com/developers/terms
+
+**Usage**: This tool integrates with Sketchfab's Viewer API to display 3D models and capture screenshots. All 3D models, viewer technology, and related services are provided by Sketchfab under their respective terms of service.
+
+**Attribution Requirements**: 
+- Models displayed are owned by their respective creators on Sketchfab
+- Individual model licenses vary (Creative Commons, Editorial, etc.)
+- Tool clearly attributes Sketchfab as the source of models and viewer technology
+- Users must respect individual model licensing terms
+
+**Compliance**: This tool is designed to comply with Sketchfab's API Terms of Service and does not:
+- Modify the appearance of the Sketchfab viewer beyond permitted API methods
+- Scrape, aggregate, or redistribute Sketchfab content
+- Bypass any licensing or attribution requirements
+- Use the API for commercial purposes without proper licensing
+
+---
+
+## Important Legal Notes
+
+1. **Model Licensing**: Each 3D model on Sketchfab has its own license (Creative Commons, Editorial, Standard, etc.). Users are responsible for respecting these licenses when using screenshots.
+
+2. **API Usage**: This tool uses Sketchfab's public Viewer API under their developer terms. Excessive usage may be subject to rate limiting.
+
+3. **No Warranty**: This tool is provided as-is without warranties. The authors are not responsible for any issues arising from its use.
+
+4. **Compliance**: Users must ensure their use of this tool and any captured content complies with applicable laws and Sketchfab's terms of service.
+
+5. **Independent Tool**: This is an independent project not affiliated with or endorsed by Sketchfab, Inc.
+
+For questions about Sketchfab's terms or model licensing, please contact Sketchfab directly through their official channels.
