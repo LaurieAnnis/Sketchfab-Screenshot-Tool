@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sketchfab Screenshot Tool</title>
+    <script type="text/javascript" src="https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .attribution {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #007bff;
+        }
+
+        .attribution a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .viewer-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .viewer-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viewer-header h2 {
+            font-size: 1.3em;
+            font-weight: 400;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+            transition: background 0.3s ease;
+        }
+
+        .status-indicator.ready {
+            background: #27ae60;
+        }
+
+        .viewer-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background: #000;
+        }
+
+        #api-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .viewer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+            transition: opacity 0.3s ease;
+        }
+
+        .viewer-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .size-presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .size-preset {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .size-preset:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+
+        .size-preset.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .model-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .model-info h4 {
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .model-info p {
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .viewer-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Sketchfab Screenshot Tool</h1>
+            <p>Capture high-resolution screenshots of 3D models with customizable settings</p>
+            <div class="attribution">
+                <strong>Powered by:</strong> 
+                <a href="https://sketchfab.com" target="_blank">Sketchfab</a> - 
+                Models and viewer technology provided by Sketchfab. This tool uses the Sketchfab Viewer API.
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="viewer-section">
+                <div class="viewer-header">
+                    <h2>3D Model Viewer</h2>
+                    <div class="status-indicator" id="status-indicator"></div>
+                </div>
+                <div class="viewer-container">
+                    <iframe src="" id="api-frame" 
+                            allow="autoplay; fullscreen; xr-spatial-tracking" 
+                            allowfullscreen 
+                            mozallowfullscreen="true" 
+                            webkitallowfullscreen="true"></iframe>
+                    <div class="viewer-overlay" id="viewer-overlay">
+                        <div>Enter a Sketchfab model URL to begin</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <!-- Model Loading Section -->
+                <div class="control-section">
+                    <div class="section-title">
+                        🔗 Load Model
+                    </div>
+                    <div class="form-group">
+                        <label for="model-url">Sketchfab Model URL:</label>
+                        <input type="text" id="model-url" 
+                               placeholder="https://sketchfab.com/3d-models/..." />
+                    </div>
+                    <button class="btn" id="load-model">Load Model</button>
+                    
+                    <div id="error-message" class="error-message hidden"></div>
+                    <div id="success-message" class="success-message hidden"></div>
+                    
+                    <div id="model-info" class="model-info hidden">
+                        <h4>Model Information</h4>
+                        <p id="model-name"></p>
+                        <p id="model-author"></p>
+                        <p id="model-license"></p>
+                    </div>
+                </div>
+
+                <!-- Screenshot Settings Section -->
+                <div class="control-section">
+                    <div class="section-title">
+                        📸 Screenshot Settings
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Size Presets:</label>
+                        <div class="size-presets">
+                            <div class="size-preset" data-width="1024" data-height="1024">1024×1024</div>
+                            <div class="size-preset" data-width="1920" data-height="1080">1920×1080</div>
+                            <div class="size-preset" data-width="2048" data-height="2048">2048×2048</div>
+                            <div class="size-preset active" data-width="4096" data-height="4096">4096×4096</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="screenshot-width">Width (px):</label>
+                        <input type="number" id="screenshot-width" value="4096" min="256" max="4096" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="screenshot-height">Height (px):</label>
+                        <input type="number" id="screenshot-height" value="4096" min="256" max="4096" />
+                    </div>
+                    
+                    <button class="btn btn-success" id="take-screenshot" disabled>
+                        📸 Take Screenshot
+                    </button>
+                </div>
+
+                <!-- Scene Options Section -->
+                <div class="control-section">
+                    <div class="section-title">
+                        ⚙️ Scene Options
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="transparent-bg">
+                        <label for="transparent-bg">Transparent Background</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="post-processing">
+                        <label for="post-processing">Post Processing</label>
+                    </div>
+                </div>
+
+                <!-- Camera Controls Section -->
+                <div class="control-section">
+                    <div class="section-title">
+                        📹 Camera Controls
+                    </div>
+                    
+                    <button class="btn" id="reset-camera" disabled>Reset Camera</button>
+                    <button class="btn" id="auto-rotate" disabled>Toggle Auto-Rotate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SketchfabScreenshotTool {
+            constructor() {
+                this.iframe = document.getElementById('api-frame');
+                this.client = null;
+                this.api = null;
+                this.modelLoaded = false;
+                this.autoRotateEnabled = false;
+                
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Load model button
+                document.getElementById('load-model').addEventListener('click', () => {
+                    this.loadModel();
+                });
+
+                // Enter key in URL input
+                document.getElementById('model-url').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.loadModel();
+                    }
+                });
+
+                // Size presets
+                document.querySelectorAll('.size-preset').forEach(preset => {
+                    preset.addEventListener('click', () => {
+                        this.selectSizePreset(preset);
+                    });
+                });
+
+                // Screenshot button
+                document.getElementById('take-screenshot').addEventListener('click', () => {
+                    this.takeScreenshot();
+                });
+
+                // Scene options
+                document.getElementById('transparent-bg').addEventListener('change', (e) => {
+                    this.toggleTransparentBackground(e.target.checked);
+                });
+
+                document.getElementById('post-processing').addEventListener('change', (e) => {
+                    this.togglePostProcessing(e.target.checked);
+                });
+
+                // Camera controls
+                document.getElementById('reset-camera').addEventListener('click', () => {
+                    this.resetCamera();
+                });
+
+                document.getElementById('auto-rotate').addEventListener('click', () => {
+                    this.toggleAutoRotate();
+                });
+            }
+
+            extractModelId(url) {
+                // Extract model ID from various Sketchfab URL formats
+                const patterns = [
+                    /sketchfab\.com\/3d-models\/[^\/]+([a-f0-9]{32})/,
+                    /sketchfab\.com\/models\/([a-f0-9]{32})/,
+                    /sketchfab\.com\/3d-models\/([a-f0-9]{32})/
+                ];
+
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match) {
+                        return match[1];
+                    }
+                }
+                return null;
+            }
+
+            showError(message) {
+                const errorEl = document.getElementById('error-message');
+                const successEl = document.getElementById('success-message');
+                
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+                successEl.classList.add('hidden');
+            }
+
+            showSuccess(message) {
+                const errorEl = document.getElementById('error-message');
+                const successEl = document.getElementById('success-message');
+                
+                successEl.textContent = message;
+                successEl.classList.remove('hidden');
+                errorEl.classList.add('hidden');
+            }
+
+            hideMessages() {
+                document.getElementById('error-message').classList.add('hidden');
+                document.getElementById('success-message').classList.add('hidden');
+            }
+
+            updateStatus(ready = false) {
+                const indicator = document.getElementById('status-indicator');
+                const overlay = document.getElementById('viewer-overlay');
+                
+                if (ready) {
+                    indicator.classList.add('ready');
+                    overlay.classList.add('hidden');
+                } else {
+                    indicator.classList.remove('ready');
+                    overlay.classList.remove('hidden');
+                }
+            }
+
+            enableControls(enabled = true) {
+                document.getElementById('take-screenshot').disabled = !enabled;
+                document.getElementById('reset-camera').disabled = !enabled;
+                document.getElementById('auto-rotate').disabled = !enabled;
+                this.modelLoaded = enabled;
+            }
+
+            async loadModel() {
+                const urlInput = document.getElementById('model-url');
+                const url = urlInput.value.trim();
+
+                if (!url) {
+                    this.showError('Please enter a Sketchfab model URL');
+                    return;
+                }
+
+                const modelId = this.extractModelId(url);
+                if (!modelId) {
+                    this.showError('Invalid Sketchfab URL. Please use a valid model URL.');
+                    return;
+                }
+
+                this.hideMessages();
+                this.enableControls(false);
+                this.updateStatus(false);
+                
+                document.getElementById('viewer-overlay').innerHTML = '<div>Loading model...</div>';
+
+                try {
+                    // Initialize Sketchfab client
+                    this.client = new Sketchfab(this.iframe);
+                    
+                    const options = {
+                        ui_controls: 1,
+                        ui_infos: 0,
+                        ui_inspector: 0,
+                        ui_watermark: 1,
+                        transparent: document.getElementById('transparent-bg').checked ? 1 : 0,
+                        success: (api) => {
+                            this.api = api;
+                            this.onModelLoaded();
+                        },
+                        error: () => {
+                            this.showError('Failed to load model. Please check the URL and try again.');
+                            this.updateStatus(false);
+                        }
+                    };
+
+                    this.client.init(modelId, options);
+
+                } catch (error) {
+                    this.showError('Error initializing viewer: ' + error.message);
+                    this.updateStatus(false);
+                }
+            }
+
+            onModelLoaded() {
+                this.api.start(() => {
+                    this.api.addEventListener('viewerready', () => {
+                        this.showSuccess('Model loaded successfully!');
+                        this.updateStatus(true);
+                        this.enableControls(true);
+                        
+                        // Get model info
+                        this.displayModelInfo();
+                        
+                        // Apply initial settings
+                        this.applySettings();
+                    });
+                });
+            }
+
+            displayModelInfo() {
+                if (!this.api) return;
+
+                this.api.getModelInfo((err, info) => {
+                    if (!err && info) {
+                        document.getElementById('model-name').textContent = `Name: ${info.name || 'Unknown'}`;
+                        document.getElementById('model-author').textContent = `Author: ${info.user?.displayName || 'Unknown'}`;
+                        document.getElementById('model-license').textContent = `License: ${info.license?.label || 'Unknown'}`;
+                        document.getElementById('model-info').classList.remove('hidden');
+                    }
+                });
+            }
+
+            applySettings() {
+                if (!this.api) return;
+
+                // Apply post-processing setting
+                const postProcessing = document.getElementById('post-processing').checked;
+                this.api.setPostProcessing('postprocessing', postProcessing);
+            }
+
+            selectSizePreset(preset) {
+                // Remove active class from all presets
+                document.querySelectorAll('.size-preset').forEach(p => p.classList.remove('active'));
+                
+                // Add active class to clicked preset
+                preset.classList.add('active');
+                
+                // Update input values
+                const width = preset.dataset.width;
+                const height = preset.dataset.height;
+                
+                document.getElementById('screenshot-width').value = width;
+                document.getElementById('screenshot-height').value = height;
+            }
+
+            async takeScreenshot() {
+                if (!this.api || !this.modelLoaded) {
+                    this.showError('No model loaded');
+                    return;
+                }
+
+                const width = parseInt(document.getElementById('screenshot-width').value);
+                const height = parseInt(document.getElementById('screenshot-height').value);
+
+                if (width < 256 || width > 4096 || height < 256 || height > 4096) {
+                    this.showError('Invalid dimensions. Width and height must be between 256 and 4096 pixels.');
+                    return;
+                }
+
+                this.hideMessages();
+                document.getElementById('take-screenshot').disabled = true;
+                document.getElementById('take-screenshot').textContent = 'Capturing...';
+
+                try {
+                    this.api.getScreenShot(width, height, 'image/png', (err, result) => {
+                        document.getElementById('take-screenshot').disabled = false;
+                        document.getElementById('take-screenshot').textContent = '📸 Take Screenshot';
+
+                        if (err) {
+                            this.showError('Failed to capture screenshot: ' + err);
+                            return;
+                        }
+
+                        // Create download link
+                        const link = document.createElement('a');
+                        link.href = result;
+                        link.download = `sketchfab-screenshot-${width}x${height}-${Date.now()}.png`;
+                        link.click();
+
+                        this.showSuccess(`Screenshot captured successfully! (${width}×${height})`);
+                    });
+                } catch (error) {
+                    document.getElementById('take-screenshot').disabled = false;
+                    document.getElementById('take-screenshot').textContent = '📸 Take Screenshot';
+                    this.showError('Error capturing screenshot: ' + error.message);
+                }
+            }
+
+            toggleTransparentBackground(enabled) {
+                if (!this.api) return;
+                
+                // Note: Transparent background requires model reload
+                if (enabled !== (this.iframe.src.includes('transparent=1'))) {
+                    this.showSuccess('Transparent background setting will apply when you reload the model.');
+                }
+            }
+
+            togglePostProcessing(enabled) {
+                if (!this.api) return;
+                this.api.setPostProcessing('postprocessing', enabled);
+            }
+
+            resetCamera() {
+                if (!this.api) return;
+                this.api.setCameraLookAt([0, 0, 0], [0, 0, 0], [0, 1, 0]);
+            }
+
+            toggleAutoRotate() {
+                if (!this.api) return;
+                
+                this.autoRotateEnabled = !this.autoRotateEnabled;
+                
+                if (this.autoRotateEnabled) {
+                    this.api.setSpeed(0.5);
+                    document.getElementById('auto-rotate').textContent = 'Stop Auto-Rotate';
+                } else {
+                    this.api.setSpeed(0);
+                    document.getElementById('auto-rotate').textContent = 'Toggle Auto-Rotate';
+                }
+            }
+        }
+
+        // Initialize the tool when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SketchfabScreenshotTool();
+        });
+    </script>
+</body>
+</html>
